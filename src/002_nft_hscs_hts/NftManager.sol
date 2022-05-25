@@ -13,13 +13,13 @@ contract NftManager is ExpiryHelper {
             string memory name, 
             string memory symbol, 
             string memory memo, 
-            uint32 maxSupply, 
-            address contractFreezeKey, 
+            uint32 maxSupply,  
             uint32 autoRenewPeriod
-        ) external payable returns (address tokenAddress){
+        ) external payable returns (address){
 
         IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
-        keys[0] = getSingleKey(HederaTokenService.FREEZE_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, contractFreezeKey);
+        keys[0] = getSingleKey(HederaTokenService.FREEZE_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
+        //keys[1] = getSingleKey(HederaTokenService.SUPPLY_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
 
         IHederaTokenService.HederaToken memory token;
         token.name = name;
@@ -32,13 +32,12 @@ contract NftManager is ExpiryHelper {
         token.freezeDefault = true;
         token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
 
-        (int response, address createdToken) = HederaTokenService.createNonFungibleToken(token);
+        (int responseCode, address createdToken) = HederaTokenService.createNonFungibleToken(token);
 
-        if(response != HederaResponseCodes.SUCCESS){
+        if(responseCode != HederaResponseCodes.SUCCESS){
             revert("Failed to create non-fungible token");
         }
-
-        tokenAddress = createdToken;
+        return createdToken;
     }
 
     function mintNft() external {
