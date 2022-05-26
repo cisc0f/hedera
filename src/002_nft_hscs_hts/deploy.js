@@ -4,15 +4,18 @@ const { AccountId,
         Client, 
         ContractCreateFlow, 
         ContractExecuteTransaction,
-        ContractFunctionParameters,
+        ContractFunctionParameters
         } = require('@hashgraph/sdk');
 
+// Setup your .env path
 require('dotenv').config({path: __dirname + '/../../.env'});
 
 const main = async () => {
 
     const accountId = AccountId.fromString(process.env.ACCOUNT_ID);
     const privateKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
+
+    metadata = "QmdJwEyyZo8Vc7C7oq6vv1j3gw6a9Xaa9TR5cDudX4kKBW";
 
     const client = Client.forTestnet().setOperator(accountId, privateKey);
 
@@ -21,11 +24,12 @@ const main = async () => {
     // Create contract
     const createContract = new ContractCreateFlow()
         .setGas(150000)
-        .setBytecode(bytecode)
+        .setBytecode(bytecode);
     const createContractTx = await createContract.execute(client);
     const createContractRx = await createContractTx.getReceipt(client);
     const contractId = createContractRx.contractId;
-    console.log(`Contract created with ID: ${contractId}`);
+
+    console.log(`Contract created with ID: ${contractId} \n`);
 
     // Create NFT from precompile
     const createToken = new ContractExecuteTransaction()
@@ -44,7 +48,37 @@ const main = async () => {
     const createTokenRx = await createTokenTx.getRecord(client);
     const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
     const tokenId = AccountId.fromSolidityAddress(tokenIdSolidityAddr);
-    console.log(`Token created with ID: ${tokenId}`);
+
+    console.log(`Token created with ID: ${tokenId} \n`);
+
+    // Mint NFT
+    const mintToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(1000000)
+        .setFunction("mintNft",
+            new ContractFunctionParameters()
+            .addAddress(tokenIdSolidityAddr) // Your token address
+            .addBytesArray([Buffer.from(metadata)]) // Metadata
+            );
+    const mintTokenTx = await mintToken.execute(client);
+    const mintTokenRx = await mintTokenTx.getRecord(client);
+    const serial = mintTokenRx.contractFunctionResult.getInt64(0);
+
+    console.log(`Minted NFT with serial: ${serial} \n`);
+
+    // Transfer NFT
+    const transferToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(1000000)
+        .setFunction("transferNft",
+            new ContractFunctionParameters()
+            .addAddress(tokenIdSolidityAddr)
+            .addAddress(accountId.toSolidityAddress())
+            .addInt64(serial))
+    const transferTokenTx = await transferToken.execute(client);
+    const transferTokenRx = await transferTokenTx.getReceipt(client);
+
+    console.log(`Transfer status: ${transferTokenRx.status} \n`);
 
 }
 
