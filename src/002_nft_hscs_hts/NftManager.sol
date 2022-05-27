@@ -17,10 +17,9 @@ contract NftManager is ExpiryHelper {
             uint32 autoRenewPeriod
         ) external payable returns (address){
 
-        IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](2);
-        keys[0] = getSingleKey(HederaTokenService.FREEZE_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
+        IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
         // Set this contract as supply
-        keys[1] = getSingleKey(HederaTokenService.SUPPLY_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
+        keys[0] = getSingleKey(HederaTokenService.SUPPLY_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
 
         IHederaTokenService.HederaToken memory token;
         token.name = name;
