@@ -33,7 +33,7 @@ async function accountCreator(pvKey, iBal) {
 const main = async () => {
     
     // Init Alice account
-    const aliceKey = PrivateKey.generate();
+    const aliceKey = PrivateKey.generateED25519();
     const aliceId = await accountCreator(aliceKey, 100);
 
     const bytecode = fs.readFileSync('./binaries/NftManager_sol_NftManager.bin');
