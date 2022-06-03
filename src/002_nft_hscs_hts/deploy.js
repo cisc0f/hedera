@@ -20,6 +20,11 @@ const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 
 const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
+//Create your local client
+// const node = {"127.0.0.1:50211": new AccountId(3)};
+// const client = Client.forNetwork(node).setMirrorNetwork("127.0.0.1:5600");
+// client.setOperator(AccountId.fromString("0.0.2"),PrivateKey.fromString("302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"));
+
 // Account creation function
 async function accountCreator(pvKey, iBal) {
     const response = await new AccountCreateTransaction()
@@ -36,7 +41,7 @@ const main = async () => {
     const aliceKey = PrivateKey.generateED25519();
     const aliceId = await accountCreator(aliceKey, 100);
 
-    const bytecode = fs.readFileSync('./binaries/NftManager_sol_NftManager.bin');
+    const bytecode = fs.readFileSync('./binaries/NFTManager_sol_NFTManager.bin');
 
     // Create contract
     const createContract = new ContractCreateFlow()
@@ -71,7 +76,7 @@ const main = async () => {
     // Mint NFT
     const mintToken = new ContractExecuteTransaction()
         .setContractId(contractId)
-        .setGas(1000000)
+        .setGas(1500000)
         .setFunction("mintNft",
             new ContractFunctionParameters()
             .addAddress(tokenIdSolidityAddr) // Token address
@@ -86,7 +91,7 @@ const main = async () => {
     // Transfer NFT to Alice
     const transferToken = await new ContractExecuteTransaction()
         .setContractId(contractId)
-        .setGas(1000000)
+        .setGas(1500000)
         .setFunction("transferNft",
             new ContractFunctionParameters()
             .addAddress(tokenIdSolidityAddr) // Token address
