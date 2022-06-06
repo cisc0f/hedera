@@ -7,7 +7,7 @@ import './HederaTokenService.sol';
 import './ExpiryHelper.sol';
 
 
-contract NFTManager is ExpiryHelper {
+contract NFTCreator is ExpiryHelper {
 
     function createNft(
             string memory name, 

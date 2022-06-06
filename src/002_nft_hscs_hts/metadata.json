@@ -1,8 +1,19 @@
 {
-	"name": "Francis 001",
-	"description": "first CRYF",
-	"image": "https://ipfs.io/ipfs/QmRrQgYQeB3wzS3Xm5QXwvEwLAWKoFHCkk9TbWxSETa1o4?filename=IMG_2682.jpeg",
-	"properties": {
-		"date": "2022-05-26"
-	}
+    "name": "Diploma",
+    "creator": "Registrar Office",
+    "description": "Certificate of Graduation",
+    "type": "image/jpg",
+    "format": "none",
+    "properties": {
+            "university": "H State University",
+            "college": "Engineering and Applied Sciences",
+            "level": "Masters",
+            "field": "Mechanical Engineering",
+            "honors": "yes",
+            "honorsType": "Summa Cum Laude",
+            "gpa": "3.84",
+            "student": "Alice",
+            "date": "2030-05-18"
+        },
+    "image": "ipfs://bafybeifn34ywbv73c3dm2wmnisuxfzqnhzxcsdmeczvu64iy4zs77vmq3m/diploma.jpg"
 }
