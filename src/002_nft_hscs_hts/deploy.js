@@ -13,7 +13,7 @@ const { AccountId,
 require('dotenv').config({path: __dirname + '/../../.env'});
 
 // CID from ipfs
-metadata = "QmdJwEyyZo8Vc7C7oq6vv1j3gw6a9Xaa9TR5cDudX4kKBW";
+CID = "ipfs://bafyreie3ichmqul4xa7e6xcy34tylbuq2vf3gnjf7c55trg3b6xyjr4bku/metadata.json";
 
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
@@ -41,7 +41,7 @@ const main = async () => {
     const aliceKey = PrivateKey.generateED25519();
     const aliceId = await accountCreator(aliceKey, 100);
 
-    const bytecode = fs.readFileSync('./binaries/NFTManager_sol_NFTManager.bin');
+    const bytecode = fs.readFileSync('./binaries/NFTCreator_sol_NFTCreator.bin');
 
     // Create contract
     const createContract = new ContractCreateFlow()
@@ -80,7 +80,7 @@ const main = async () => {
         .setFunction("mintNft",
             new ContractFunctionParameters()
             .addAddress(tokenIdSolidityAddr) // Token address
-            .addBytesArray([Buffer.from(metadata)]) // Metadata
+            .addBytesArray([Buffer.from(CID)]) // Metadata
             );
     const mintTokenTx = await mintToken.execute(client);
     const mintTokenRx = await mintTokenTx.getRecord(client);
