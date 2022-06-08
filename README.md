@@ -1,5 +1,5 @@
 # - hedera_cisc0f - 
-## What can you find in `/src`?
+## What you will find in `/src`:
 #### `001_contract_create_flow`
 A simple example on how to create and upload a smart contract to Hedera Network using a single `ContractCreateFlow()` method.
 #
