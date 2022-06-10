@@ -37,7 +37,7 @@ const main = async () => {
     .setTokenName("CryptoFrancis")
     .setTokenSymbol("CRYF")
     .setTreasuryAccountId(treasuryId)
-    .setInitialSupply(1000000000)
+    .setInitialSupply(10000)
     .setDecimals(2)
     .setAdminKey(adminKey.publicKey)
     .setMaxTransactionFee(new Hbar(30)) //Change the default max transaction fee
