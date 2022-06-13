@@ -49,7 +49,7 @@ const main = async () => {
 
     console.log(`Contract created with ID: ${contractId}`);
 
-    // Create FT using precompile function
+    // Create NFT using precompile function
     const createToken = new ContractExecuteTransaction()
         .setContractId(contractId)
         .setGas(300000) // Increase if revert
