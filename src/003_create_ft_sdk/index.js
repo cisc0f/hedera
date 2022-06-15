@@ -34,14 +34,16 @@ const main = async () => {
 
     //Create the transaction and freeze for manual signing
     const transaction = await new TokenCreateTransaction()
-    .setTokenName("CryptoFrancis")
-    .setTokenSymbol("CRYF")
-    .setTreasuryAccountId(treasuryId)
-    .setInitialSupply(10000)
-    .setDecimals(2)
-    .setAdminKey(adminKey.publicKey)
-    .setMaxTransactionFee(new Hbar(30)) //Change the default max transaction fee
-    .freezeWith(client);
+        .setTokenName("CryptoFrancis")
+        .setTokenSymbol("CRYF")
+        .setTreasuryAccountId(treasuryId)
+        .setInitialSupply(10000)
+        .setDecimals(2)
+        .setAdminKey(adminKey.publicKey)
+        .setAutoRenewAccountId(adminId)
+        .setAutoRenewPeriod(7000000)
+        .setMaxTransactionFee(new Hbar(30)) //Change the default max transaction fee
+        .freezeWith(client);
 
     //Sign the transaction with the token adminKey and the token treasury account private key
     const signTx =  await (await transaction.sign(adminKey)).sign(treasuryKey);
