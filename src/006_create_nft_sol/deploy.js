@@ -56,8 +56,8 @@ const main = async () => {
         .setPayableAmount(20) // Increase if revert
         .setFunction("createNonFungible", 
             new ContractFunctionParameters()
-            .addString("CryptoFrancis") //NFT name
-            .addString("CRYF") // NFT symbol
+            .addString("Fall Collection") //NFT name
+            .addString("LEAF") // NFT symbol
             .addString("Just a memo") // NFT memo
             .addUint32(250) // NFT max supply
             .addAddress(treasuryId.toSolidityAddress()) // treasury account

@@ -34,8 +34,8 @@ const main = async () => {
 
     //Create the transaction and freeze for manual signing
     const transaction = await new TokenCreateTransaction()
-        .setTokenName("CryptoFrancis")
-        .setTokenSymbol("CRYF")
+        .setTokenName("USD Bar")
+        .setTokenSymbol("USDB")
         .setTreasuryAccountId(treasuryId)
         .setInitialSupply(10000)
         .setDecimals(2)

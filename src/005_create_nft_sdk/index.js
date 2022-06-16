@@ -38,29 +38,32 @@ const main = async () => {
     const treasuryId = await accountCreator(treasuryKey, 10);
 
     //Create the NFT
-    let nftCreate = await new TokenCreateTransaction()
-        .setTokenName("CryptoFrancis")
-        .setTokenSymbol("CRYF")
+    const nftCreate = await new TokenCreateTransaction()
+        .setTokenName("Fall Collection")
+        .setTokenSymbol("LEAF")
         .setTokenType(TokenType.NonFungibleUnique)
         .setDecimals(0)
+        .setTokenMemo("Just a memo")
         .setInitialSupply(0)
         .setTreasuryAccountId(treasuryId)
         .setSupplyType(TokenSupplyType.Finite)
         .setMaxSupply(250)
+        .setAutoRenewAccountId(supplyId)
+        .setAutoRenewPeriod(7000000)
         .setSupplyKey(supplyKey)
         .freezeWith(client);
 
     //Sign the transaction with the treasury key
-    let nftCreateTxSign = await nftCreate.sign(treasuryKey);
+    const nftCreateTxSign = await nftCreate.sign(treasuryKey);
 
     //Submit the transaction to a Hedera network
-    let nftCreateSubmit = await nftCreateTxSign.execute(client);
+    const nftCreateSubmit = await nftCreateTxSign.execute(client);
 
     //Get the transaction receipt
-    let nftCreateRx = await nftCreateSubmit.getReceipt(client);
+    const nftCreateRx = await nftCreateSubmit.getReceipt(client);
 
     //Get the token ID
-    let tokenId = nftCreateRx.tokenId;
+    const tokenId = nftCreateRx.tokenId;
 
     //Log the token ID
     console.log(`Created NFT with ID: ${tokenId} \n`);

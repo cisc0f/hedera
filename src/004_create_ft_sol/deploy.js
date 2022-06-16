@@ -56,8 +56,8 @@ const main = async () => {
         .setPayableAmount(20) // Increase if revert
         .setFunction("createFungible", 
             new ContractFunctionParameters()
-            .addString("CryptoFrancis") // FT name
-            .addString("CRYF") // FT symbol
+            .addString("USD Bar") // FT name
+            .addString("USDB") // FT symbol
             .addUint256(1000000000) // FT initial supply
             .addUint256(2) // FT decimals
             .addAddress(treasuryId.toSolidityAddress()) // treasury account
