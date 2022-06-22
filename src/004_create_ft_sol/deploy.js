@@ -60,10 +60,6 @@ const main = async () => {
             .addString("USDB") // FT symbol
             .addUint256(1000000000) // FT initial supply
             .addUint256(2) // FT decimals
-            .addAddress(treasuryId.toSolidityAddress()) // treasury account
-            .addBytes(adminKey.publicKey.toBytes()) // admin public key
-            .addBytes(treasuryKey.publicKey.toBytes()) // treasury public key
-            .addAddress(adminId.toSolidityAddress()) // auto renew account (admin)
             .addUint32(7000000)) // auto renew period
         .freezeWith(client);
 

@@ -27,8 +27,6 @@ async function accountCreator(pvKey, iBal) {
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 10);
     const treasuryKey = PrivateKey.generateED25519();
     const treasuryId = await accountCreator(treasuryKey, 10);
 
@@ -39,14 +37,13 @@ const main = async () => {
         .setTreasuryAccountId(treasuryId)
         .setInitialSupply(10000)
         .setDecimals(2)
-        .setAdminKey(adminKey.publicKey)
-        .setAutoRenewAccountId(adminId)
+        .setAutoRenewAccountId(treasuryId)
         .setAutoRenewPeriod(7000000)
         .setMaxTransactionFee(new Hbar(30)) //Change the default max transaction fee
         .freezeWith(client);
 
     //Sign the transaction with the token adminKey and the token treasury account private key
-    const signTx =  await (await transaction.sign(adminKey)).sign(treasuryKey);
+    const signTx =  await transaction.sign(treasuryKey);
 
     //Sign the transaction with the client operator private key and submit to a Hedera network
     const txResponse = await signTx.execute(client);
