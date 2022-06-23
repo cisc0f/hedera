@@ -33,8 +33,6 @@ async function accountCreator(pvKey, iBal) {
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 10);
     const treasuryKey = PrivateKey.generateED25519();
     const treasuryId = await accountCreator(treasuryKey, 10);
 
@@ -61,14 +59,11 @@ const main = async () => {
             .addString("Just a memo") // NFT memo
             .addUint32(250) // NFT max supply
             .addAddress(treasuryId.toSolidityAddress()) // treasury account
-            .addBytes(adminKey.publicKey.toBytes()) // admin public key
-            .addBytes(treasuryKey.publicKey.toBytes()) // treasury public key
-            .addAddress(adminId.toSolidityAddress()) // auto renew account (admin)
             .addUint32(7000000)) // auto renew period
         .freezeWith(client);
 
     // sign transaction with admin and treasury
-    const signTx = await (await createToken.sign(adminKey)).sign(treasuryKey);
+    const signTx = await createToken.sign(treasuryKey);
     const createTokenTx = await signTx.execute(client);
 
     const createTokenRx = await createTokenTx.getRecord(client);

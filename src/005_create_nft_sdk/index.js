@@ -32,8 +32,6 @@ async function accountCreator(pvKey, iBal) {
 
 const main = async () => {
 
-    const supplyKey = PrivateKey.generateED25519();
-    const supplyId = await accountCreator(supplyKey, 10);
     const treasuryKey = PrivateKey.generateED25519();
     const treasuryId = await accountCreator(treasuryKey, 10);
 
@@ -48,9 +46,8 @@ const main = async () => {
         .setTreasuryAccountId(treasuryId)
         .setSupplyType(TokenSupplyType.Finite)
         .setMaxSupply(250)
-        .setAutoRenewAccountId(supplyId)
+        .setAutoRenewAccountId(treasuryId)
         .setAutoRenewPeriod(7000000)
-        .setSupplyKey(supplyKey)
         .freezeWith(client);
 
     //Sign the transaction with the treasury key
