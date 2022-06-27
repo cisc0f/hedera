@@ -33,8 +33,6 @@ async function accountCreator(pvKey, iBal) {
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 10);
     const treasuryKey = PrivateKey.generateED25519();
     const treasuryId = await accountCreator(treasuryKey, 10);
 
@@ -64,7 +62,7 @@ const main = async () => {
         .freezeWith(client);
 
     // sign transaction with admin and treasury
-    const signTx = await (await createToken.sign(adminKey)).sign(treasuryKey);
+    const signTx = await createToken.sign(treasuryKey);
     const createTokenTx = await signTx.execute(client);
 
     const createTokenRx = await createTokenTx.getRecord(client);
