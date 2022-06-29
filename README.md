@@ -23,3 +23,39 @@ Simple Non-Fungible Token creation script using Hedera SDK.<br>
 #### `006_create_nft_sol`
 An example on how to create a Non-Fungible Token using a Solidity Contract.<br>
 [Explore Now](./src/006_create_nft_sol/)
+#
+#### `007_c2a_erc`
+An example on how to associate and transfer a fungible token from a Contract to an Account using ERC calls<br>
+[Explore Now](./src/007_c2a_erc/)
+#
+#### `008_c2a_sol`
+An example on how to associate and transfer a fungible token from a Contract to an Account using precompile<br>
+[Explore Now](./src/008_c2a_sol/)
+#
+#### `009_c2a_sdk`
+An example on how to associate and transfer a fungible token from a Contract to an Account using SDK<br>
+[Explore Now](./src/009_c2a_sdk/)
+#
+#### `010_a2c_erc`
+An example on how to associate and transfer a fungible token from an Account to a Contract using ERC calls<br>
+[Explore Now](./src/010_a2c_erc/)
+#
+#### `011_a2c_sol`
+An example on how to associate and transfer a fungible token from an Account to a Contract using precompile<br>
+[Explore Now](./src/011_a2c_sol/)
+#
+#### `012_a2c_sdk`
+An example on how to associate and transfer a fungible token from an Account to a Contract using SDK<br>
+[Explore Now](./src/012_a2c_sdk/)
+#
+#### `013_c2c_erc`
+An example on how to associate and transfer a fungible token from a Contract to a Contract using ERC calls<br>
+[Explore Now](./src/013_c2c_erc/)
+#
+#### `014_c2c_sol`
+An example on how to associate and transfer a fungible token from a Contract to a Contract using precompile<br>
+[Explore Now](./src/014_c2c_sol/)
+#
+#### `015_c2c_sdk`
+An example on how to associate and transfer a fungible token from a Contract to a Contract using SDK<br>
+[Explore Now](./src/015_c2c_sdk/)
