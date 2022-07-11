@@ -59,12 +59,9 @@ const main = async () => {
             .addString("Just a memo") // NFT memo
             .addUint32(250) // NFT max supply
             .addAddress(treasuryId.toSolidityAddress()) // treasury account
-            .addUint32(7000000)) // auto renew period
-        .freezeWith(client);
-
-    // sign transaction with admin and treasury
-    const signTx = await createToken.sign(treasuryKey);
-    const createTokenTx = await signTx.execute(client);
+            .addUint32(7000000)); // auto renew period
+    
+    const createTokenTx = await createToken.execute(client);
 
     const createTokenRx = await createTokenTx.getRecord(client);
     const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);

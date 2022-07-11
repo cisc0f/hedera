@@ -58,12 +58,9 @@ const main = async () => {
             .addString("USDB") // FT symbol
             .addUint256(1000000000) // FT initial supply
             .addUint256(2) // FT decimals
-            .addUint32(7000000)) // auto renew period
-        .freezeWith(client);
+            .addUint32(7000000)); // auto renew period
 
-    // sign transaction with admin and treasury
-    const signTx = await createToken.sign(treasuryKey);
-    const createTokenTx = await signTx.execute(client);
+    const createTokenTx = await createToken.execute(client);
 
     const createTokenRx = await createTokenTx.getRecord(client);
     const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
