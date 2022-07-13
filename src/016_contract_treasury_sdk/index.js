@@ -27,17 +27,15 @@ const main = async () => {
 
     const bytecode = fs.readFileSync("./TreasuryContract_sol_TreasuryContract.bin");
 
-    // Switch operator to admin to sign transactions
-    //client.setOperator(adminId, adminKey);
+    // Switch operator to admin to sign transactions (tmp)
+    client.setOperator(adminId, adminKey);
 
     // Create contract with adminKey
     const contractCreate = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecode)
-        .setAdminKey(adminKey)
-        .freezeWith(client);
-    const signedContractCreate = await contractCreate.sign(adminKey);
-    const contractCreateTx = await signedContractCreate.execute(client);
+        .setAdminKey(adminKey);
+    const contractCreateTx = await contractCreate.execute(client);
     const contractCreateRx = await contractCreateTx.getReceipt(client);
     const contractId = contractCreateRx.contractId;
 
