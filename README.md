@@ -59,3 +59,11 @@ An example on how to associate and transfer a fungible token from a Contract to 
 #### `015_c2c_sdk`
 An example on how to associate and transfer a fungible token from a Contract to a Contract using SDK<br>
 [Explore Now](./src/015_c2c_sdk/)
+#
+#### `016_contract_treasury_sdk`
+An example on how to setup a smart contract as token treasury using js sdk<br>
+[Explore Now](./src/016_contract_treasury_sdk/)
+#
+#### `017_contract_treasury_sol`
+An example on how to setup a smart contract as token treasury using precompile<br>
+[Explore Now](./src/017_contract_treasury_sol/)
