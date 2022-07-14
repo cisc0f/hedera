@@ -4,14 +4,13 @@ const {
     PrivateKey, 
     ContractCreateFlow, 
     ContractExecuteTransaction, 
-    ContractFunctionParameters, 
-    ContractInfoQuery, 
-    AccountInfoQuery
+    ContractFunctionParameters,  
+    AccountInfoQuery,
+    TokenId
 } = require('@hashgraph/sdk');
 
 const { 
-    accountCreator, 
-    tokenCreator 
+    accountCreator 
 } = require('./utils');
 
 require('dotenv').config({path: __dirname + '/../../.env'});
@@ -20,34 +19,45 @@ const fs = require('fs');
 const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 
-const client = Client.forTestnet();
-client.setOperator(operatorId, operatorKey);
+const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 10, client);
-    // add owner?
+    // Generating token receiver account
+    const aliceKey = PrivateKey.generateED25519();
+    const aliceId = await accountCreator(aliceKey, 20, client);
 
     const bytecode = fs.readFileSync('./binaries/TokenSender_sol_TokenSender.bin');
 
-    client.setOperator(adminId, adminKey);
     // Create contract using ContractCreateFlow
     const createContract = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecode)
-        .setAdminKey(adminKey);
     const createSubmit = await createContract.execute(client);
     const createRx = await createSubmit.getReceipt(client);
     const contractId = createRx.contractId;
 
     console.log("The new contract ID is " + contractId);
 
-    client.setOperator(operatorId, operatorKey);
+    // Create FT using precompile function
+    const createToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(300000) // Increase if reverts
+        .setPayableAmount(20) // Increase if reverts
+        .setFunction("createFungible", 
+            new ContractFunctionParameters()
+            .addString("USD Bar") // FT name
+            .addString("USDB") // FT symbol
+            .addUint256(10000) // FT initial supply
+            .addUint256(2) // FT decimals
+            .addUint32(7000000)); // auto renew period
 
-    const tokenId = await tokenCreator(adminKey, AccountId.fromString(contractId), adminKey, client);
+    const createTokenTx = await createToken.execute(client);
+    const createTokenRx = await createTokenTx.getRecord(client);
+    const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
+    const tokenId = TokenId.fromSolidityAddress(tokenIdSolidityAddr);
 
-    console.log("The new token ID is " + tokenId);
+    console.log(`Token created with ID: ${tokenId} \n`);
 
     // Execute token associate
     const tokenAssociate = new ContractExecuteTransaction()
@@ -55,10 +65,12 @@ const main = async () => {
         .setGas(1500000)
         .setFunction("tokenAssociate", 
             new ContractFunctionParameters()
-            .addAddress(tokenId.toSolidityAddress())
-            .addAddress(operatorId.toSolidityAddress())
-        );
-    const tokenAssociateTx = await tokenAssociate.execute(client);
+            .addAddress(tokenIdSolidityAddr) // Token ID
+            .addAddress(aliceId.toSolidityAddress()) // Account ID
+        )
+        .freezeWith(client);
+    const tokenAssociateSigned = await tokenAssociate.sign(aliceKey);
+    const tokenAssociateTx = await tokenAssociateSigned.execute(client);
     const tokenAssociateRx = await tokenAssociateTx.getReceipt(client);
     const tokenAssociateStatus = tokenAssociateRx.status;
 
@@ -70,21 +82,19 @@ const main = async () => {
         .setGas(1500000)
         .setFunction("tokenTransfer", 
             new ContractFunctionParameters()
-            .addAddress(tokenId.toSolidityAddress())
-            .addAddress(operatorId.toSolidityAddress())
-            .addInt64(1000)
-        )
-        .freezeWith(client);
-    const tokenTransferSigned = await tokenTransfer.sign(adminKey); //not required?
-    const tokenTransferTx = await tokenTransferSigned.execute(client);
+            .addAddress(tokenId.toSolidityAddress()) // Token ID
+            .addAddress(aliceId.toSolidityAddress()) // Token receiver
+            .addInt64(1000) // Token amount
+        );
+    const tokenTransferTx = await tokenTransfer.execute(client);
     const tokenTransferRx = await tokenTransferTx.getReceipt(client);
     const tokenTransferStatus = tokenTransferRx.status;
 
     console.log("Token transfer transaction status: " + tokenTransferStatus.toString());
 
-    //Create the query
+    // Check Alice token balance
     const query = new AccountInfoQuery()
-        .setAccountId(operatorId)
+        .setAccountId(aliceId)
 
     const info = await query.execute(client);
     const balance = info.tokenRelationships.get(tokenId).balance / 100;
