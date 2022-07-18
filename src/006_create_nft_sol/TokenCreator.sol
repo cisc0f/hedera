@@ -12,10 +12,14 @@ contract TokenCreator is ExpiryHelper{
             string memory name, 
             string memory symbol, 
             string memory memo, 
-            uint32 maxSupply,  
-            address treasuryAccount,
+            uint32 maxSupply,
             uint32 autoRenewPeriod
         ) external payable returns (address){
+
+        // Instantiate the list of keys we'll use for token create
+        IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
+        // use the helper methods in KeyHelper to create basic key
+        keys[0] = createSingleKey(HederaTokenService.SUPPLY_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
 
         IHederaTokenService.HederaToken memory token;
         token.name = name;
@@ -23,10 +27,10 @@ contract TokenCreator is ExpiryHelper{
         token.memo = memo;
         token.treasury = address(this);
         token.tokenSupplyType = true; // set supply to FINITE
+        token.tokenKeys = keys;
         token.maxSupply = maxSupply;
-        token.treasury = treasuryAccount;
         token.freezeDefault = false;
-        token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
 
         (int responseCode, address createdToken) = HederaTokenService.createNonFungibleToken(token);
 

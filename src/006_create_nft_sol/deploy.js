@@ -58,7 +58,6 @@ const main = async () => {
             .addString("LEAF") // NFT symbol
             .addString("Just a memo") // NFT memo
             .addUint32(250) // NFT max supply
-            .addAddress(treasuryId.toSolidityAddress()) // treasury account
             .addUint32(7000000)); // auto renew period
     
     const createTokenTx = await createToken.execute(client);

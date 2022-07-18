@@ -45,6 +45,7 @@ const main = async () => {
         .setInitialSupply(0)
         .setTreasuryAccountId(treasuryId)
         .setSupplyType(TokenSupplyType.Finite)
+        .setSupplyKey(treasuryKey)
         .setMaxSupply(250)
         .setAutoRenewAccountId(treasuryId)
         .setAutoRenewPeriod(7000000)
