@@ -23,7 +23,7 @@ contract TokenCreator is ExpiryHelper{
         token.treasury = address(this);
 
         // create the expiry schedule for the token using ExpiryHelper
-        token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod);
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod);
 
         // call HTS precompiled contract, passing initial supply and decimals
         (int responseCode, address tokenAddress) =
