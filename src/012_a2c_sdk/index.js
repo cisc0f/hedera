@@ -1,12 +1,13 @@
 const { 
     PrivateKey, 
     AccountId, 
-    Client, 
-    Hbar,
+    Client,
     TokenAssociateTransaction,
     ContractCreateFlow,
     TransferTransaction,
     ContractInfoQuery,
+    ContractUpdateTransaction,
+    KeyList,
 } = require('@hashgraph/sdk');
 
 const {
@@ -22,40 +23,49 @@ require('dotenv').config({path: __dirname + '/../../.env'});
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 
-const client = Client.forTestnet();
-client.setOperator(operatorId, operatorKey);
+const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
+    // Create admin key for contract
     const adminKey = PrivateKey.generateED25519();
     const adminId = await accountCreator(adminKey, 10, client);
-    // const ownerKey = PrivateKey.generateED25519();
-    // const ownerId = await accountCreator(ownerKey, 10, client);
 
-    // Create token and give to account
-    const tokenId = await tokenCreator(adminKey, operatorId, operatorKey, client);
+    // Alice is the sender 
+    const aliceKey = PrivateKey.generateED25519();
+    const aliceId = await accountCreator(aliceKey, 10, client);
+
+    // Create token with Alice as treasury
+    const tokenId = await tokenCreator(aliceId, aliceKey, client);
 
     console.log("The new token ID is " + tokenId);
 
+    // Load bytecode
     const bytecode = fs.readFileSync('TokenReceiver_sol_TokenReceiver.bin');
-    // Change operator to adminId
+    
+    // Switch operator to sign transaction
     client.setOperator(adminId, adminKey);
-    // Create contract using ContractCreateFlow
+
+    // Create contract with adminKey
     const createContract = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecode)
-        .setAdminKey(adminKey);
+        .setAdminKey(adminKey)
     const createSubmit = await createContract.execute(client);
     const createRx = await createSubmit.getReceipt(client);
     const contractId = createRx.contractId;
 
     console.log("The new contract ID is " + contractId);
 
-    // Associate token to contract
+    // Switch operator back to operator account
+    client.setOperator(operatorId, operatorKey);
+
+    // Associate token to contract (sign using adminKey)
     const associateToken = await new TokenAssociateTransaction()
         .setAccountId(AccountId.fromString(contractId))
-        .setTokenIds([tokenId]);
-        // Signing not needed as execute is using adminKey to sign already
+        .setTokenIds([tokenId])
+        .freezeWith(client)
+        .sign(adminKey);
 
     const associateTokenTx = await associateToken.execute(client);
     const associateTokenRx = await associateTokenTx.getReceipt(client);
@@ -64,15 +74,23 @@ const main = async () => {
 
     console.log("The associate transaction status: " + associateTokenStatus.toString());
 
-    // Switch back to operatorId
-    client.setOperator(operatorId, operatorKey);
+    // Update contract and remove contract's admin key
+    const contractUpdate = await new ContractUpdateTransaction()
+        .setContractId(contractId)
+        .setAdminKey(new KeyList())
+        .freezeWith(client)
+        .sign(adminKey);
+    const contractUpdateTx = await contractUpdate.execute(client);
+    const contractUpdateRx = await contractUpdateTx.getReceipt(client);
 
-    // Transfer token from account to contract using SDK
+    console.log("Contract update status: " + contractUpdateRx.status.toString());
+
+    // Transfer token from Alice to the contract using SDK
     const transferToken = new TransferTransaction()
-        .addTokenTransfer(tokenId, operatorId, -1000) // Transfer 10 USDB
-        .addTokenTransfer(tokenId, contractId, 1000)
+        .addTokenTransfer(tokenId, aliceId, -1000) // -10 USDB
+        .addTokenTransfer(tokenId, contractId, 1000) // +10 USDB
         .freezeWith(client);
-    const transferTokenTx = await transferToken.sign(operatorKey);
+    const transferTokenTx = await transferToken.sign(aliceKey);
     const transferTokenSubmit = await transferTokenTx.execute(client);
     const transferTokenRx = await transferTokenSubmit.getReceipt(client);
 
@@ -80,7 +98,7 @@ const main = async () => {
 
     console.log("The transfer transaction status: " + transferTokenStatus.toString());
 
-    //Create the query
+    //Check contract's balance
     const query = new ContractInfoQuery()
         .setContractId(contractId);
 
