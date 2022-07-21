@@ -22,14 +22,14 @@ const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
-    // Generating token receiver account
+    // Generating token receiver account (Alice)
     const aliceKey = PrivateKey.generateED25519();
     const aliceId = await accountCreator(aliceKey, 20, client);
     
     // Get compiled contract bytecode
-    const bytecode = fs.readFileSync('./binaries/TokenSenderERC_sol_TokenSenderERC.bin');
+    const bytecode = fs.readFileSync('./binaries/TokenSender_sol_TokenSender.bin');
 
-    // Create contract using ContractCreateFlow
+    // Create TokenSender contract
     const createContract = new ContractCreateFlow()
         .setGas(100000) // Increase if reverts
         .setBytecode(bytecode) // Set contract bytecode
@@ -40,7 +40,7 @@ const main = async () => {
 
     console.log("The new contract ID is " + contractId);
 
-    // Create FT using precompile function
+    // Create FT using precompile function in TokenSender
     const createToken = new ContractExecuteTransaction()
         .setContractId(contractId)
         .setGas(300000) // Increase if revert
@@ -58,9 +58,9 @@ const main = async () => {
     const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
     const tokenId = TokenId.fromSolidityAddress(tokenIdSolidityAddr);
 
-    console.log(`Token created with ID: ${tokenId} \n`);
+    console.log(`Token created with ID: ${tokenId}`);
 
-    // Associate token to receiver account
+    // Associate token with Alice
     const associateToken = await new TokenAssociateTransaction()
         .setAccountId(AccountId.fromString(aliceId)) // receiver ID
         .setTokenIds([tokenId]) // token IDs
@@ -73,7 +73,7 @@ const main = async () => {
 
     console.log("The associate transaction status: " + associateTokenStatus.toString());
 
-    // Execute token transfer
+    // Execute token transfer from TokenSender to Alice
     const tokenTransfer = new ContractExecuteTransaction()
         .setContractId(contractId) // Contract ID
         .setGas(4000000) // Increase if reverts
@@ -90,7 +90,7 @@ const main = async () => {
 
     console.log("Token transfer transaction status: " + tokenTransferStatus.toString());
 
-    // Check receiver balance
+    // Check Alice's balance
     const query = new AccountInfoQuery()
         .setAccountId(aliceId) // Token receiver ID
 

@@ -9,9 +9,9 @@ import './ExpiryHelper.sol';
 import './oz-contracts/contracts/token/ERC20/IERC20.sol';
 import './oz-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 
-contract TokenSenderERC is ExpiryHelper{
+contract TokenSender is ExpiryHelper {
 
-    // Create fungible token, this contract as treasury
+    // create a fungible Token with no custom fees,
     function createFungible(
         string memory name,
         string memory symbol,
@@ -26,7 +26,7 @@ contract TokenSenderERC is ExpiryHelper{
         token.treasury = address(this);
 
         // create the expiry schedule for the token using ExpiryHelper
-        token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod);
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod);
 
         // call HTS precompiled contract, passing initial supply and decimals
         (int responseCode, address tokenAddress) =
@@ -37,6 +37,14 @@ contract TokenSenderERC is ExpiryHelper{
         }
 
         createdTokenAddress = tokenAddress;
+    }
+
+    function tokenTransfer(address tokenId, address receiver, int64 amount) external {
+        int response = HederaTokenService.transferToken(tokenId, address(this), receiver, amount);
+    
+        if (response != HederaResponseCodes.SUCCESS) {
+            revert ("Transfer Failed");
+        }
     }
 
     // Transfer token from this contract to the recipient
