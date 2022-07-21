@@ -67,3 +67,7 @@ An example on how to setup a smart contract as token treasury using js sdk<br>
 #### `017_contract_treasury_sol`
 An example on how to setup a smart contract as token treasury using precompile<br>
 [Explore Now](./src/017_contract_treasury_sol/)
+#
+#### `018_c2c_sol_c2a_erc`
+An example derived from 014 and 007 merged into one project.<br>
+[Explore Now](./src/018_c2c_sol_c2a_erc/)
