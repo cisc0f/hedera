@@ -1,17 +1,39 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.6.0 <0.9.0;
 
-import "./HederaTokenService.sol";
-import "./HederaResponseCodes.sol";
+import './HederaResponseCodes.sol';
+import './IHederaTokenService.sol';
+import './HederaTokenService.sol';
+import './ExpiryHelper.sol';
 
-contract TokenSender is HederaTokenService {
+contract TokenSender is ExpiryHelper {
 
-    function tokenAssociate(address tokenId, address contractId) external {
-        int response = HederaTokenService.associateToken(contractId, tokenId);
+    // create a fungible Token with no custom fees,
+    function createFungible(
+        string memory name,
+        string memory symbol,
+        uint initialSupply,
+        uint decimals,
+        uint32 autoRenewPeriod
+    ) external payable returns (address createdTokenAddress) {
 
-        if (response != HederaResponseCodes.SUCCESS) {
-            revert ("Associate Failed");
+        IHederaTokenService.HederaToken memory token;
+        token.name = name;
+        token.symbol = symbol;
+        token.treasury = address(this);
+
+        // create the expiry schedule for the token using ExpiryHelper
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod);
+
+        // call HTS precompiled contract, passing initial supply and decimals
+        (int responseCode, address tokenAddress) =
+                    HederaTokenService.createFungibleToken(token, initialSupply, decimals);
+
+        if (responseCode != HederaResponseCodes.SUCCESS) {
+            revert ();
         }
+
+        createdTokenAddress = tokenAddress;
     }
 
     function tokenTransfer(address tokenId, address receiver, int64 amount) external {

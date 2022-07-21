@@ -8,66 +8,67 @@ const {
     ContractInfoQuery 
 } = require('@hashgraph/sdk');
 
-const { 
-    accountCreator, 
-    tokenCreator 
-} = require('./utils');
-
 require('dotenv').config({path: __dirname + '/../../.env'});
 const fs = require('fs');
 
 const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 
-const client = Client.forTestnet();
-client.setOperator(operatorId, operatorKey);
+const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 40, client);
-    // add owner?
-
+    // Get bytecode from compiled contract
     const bytecodeSender = fs.readFileSync('./binaries/TokenSender_sol_TokenSender.bin');
     const bytecodeReceiver = fs.readFileSync('./binaries/TokenReceiver_sol_TokenReceiver.bin');
 
-    // Change operator to adminId
-    client.setOperator(adminId, adminKey);
-    // Create sender contract using ContractCreateFlow
+    // Create TokenSender contract
     const createSenderContract = new ContractCreateFlow()
         .setGas(100000)
-        .setBytecode(bytecodeSender)
-        .setAdminKey(adminKey);
+        .setBytecode(bytecodeSender);
     const createSenderSubmit = await createSenderContract.execute(client);
     const createSenderRx = await createSenderSubmit.getReceipt(client);
     const contractIdSender = createSenderRx.contractId;
 
     console.log("The new contract ID is " + contractIdSender);
 
-    // Create receiver contract using ContractCreateFlow
+    // Create TokenReceiver contract
     const createReceiverContract = new ContractCreateFlow()
         .setGas(100000)
-        .setBytecode(bytecodeReceiver)
-        .setAdminKey(adminKey);
+        .setBytecode(bytecodeReceiver);
     const createReceiverSubmit = await createReceiverContract.execute(client);
     const createReceiverRx = await createReceiverSubmit.getReceipt(client);
     const contractIdReceiver = createReceiverRx.contractId;
 
     console.log("The new contract ID is " + contractIdReceiver);
 
-    // Create token and give to sender contract
-    const tokenId = await tokenCreator(adminKey, AccountId.fromString(contractIdSender), adminKey, client);
-
-    console.log("The new token ID is " + tokenId);
-
-    // Execute token associate
-    const tokenAssociate = new ContractExecuteTransaction()
+    // Create FT using TokenSender create function
+    const createToken = new ContractExecuteTransaction()
         .setContractId(contractIdSender)
+        .setGas(300000) // Increase if revert
+        .setPayableAmount(20) // Increase if revert
+        .setFunction("createFungible", 
+            new ContractFunctionParameters()
+            .addString("USD Bar") // FT name
+            .addString("USDB") // FT symbol
+            .addUint256(10000) // FT initial supply
+            .addUint256(2) // FT decimals
+            .addUint32(7000000)); // auto renew period
+
+    const createTokenTx = await createToken.execute(client);
+    const createTokenRx = await createTokenTx.getRecord(client);
+    const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
+    const tokenId = AccountId.fromSolidityAddress(tokenIdSolidityAddr);
+
+    console.log(`Token created with ID: ${tokenId}`);
+
+    // Execute token associate function in TokenReceiver
+    const tokenAssociate = new ContractExecuteTransaction()
+        .setContractId(contractIdReceiver)
         .setGas(1500000)
         .setFunction("tokenAssociate", 
             new ContractFunctionParameters()
             .addAddress(tokenId.toSolidityAddress())
-            .addAddress(contractIdReceiver.toSolidityAddress())
         );
     const tokenAssociateTx = await tokenAssociate.execute(client);
     const tokenAssociateRx = await tokenAssociateTx.getReceipt(client);
@@ -75,10 +76,7 @@ const main = async () => {
 
     console.log("Token associate transaction status: " + tokenAssociateStatus.toString());
 
-    // Switch back to operatorId
-    client.setOperator(operatorId, operatorKey);
-
-    // Execute token transfer
+    // Execute token transfer (TokenSender -> TokenReceiver)
     const tokenTransfer = new ContractExecuteTransaction()
         .setContractId(contractIdSender)
         .setGas(1500000)
@@ -87,16 +85,14 @@ const main = async () => {
             .addAddress(tokenId.toSolidityAddress())
             .addAddress(contractIdReceiver.toSolidityAddress())
             .addInt64(1000)
-        )
-        .freezeWith(client);
-    const tokenTransferSigned = await tokenTransfer.sign(adminKey);
-    const tokenTransferTx = await tokenTransferSigned.execute(client);
+        );
+    const tokenTransferTx = await tokenTransfer.execute(client);
     const tokenTransferRx = await tokenTransferTx.getReceipt(client);
     const tokenTransferStatus = tokenTransferRx.status;
 
     console.log("Token transfer transaction status: " + tokenTransferStatus.toString());
 
-    // Get Sender balance
+    // Get TokenSender balance
     const getSender = new ContractInfoQuery()
         .setContractId(contractIdSender);
 
@@ -105,7 +101,7 @@ const main = async () => {
 
     console.log("The sender contract balance for token " + tokenId + " is: " + senderBalance);
 
-    // Get Receiver balance
+    // Get TokenReceiver balance
     const getReceiver = new ContractInfoQuery()
         .setContractId(contractIdReceiver);
 
