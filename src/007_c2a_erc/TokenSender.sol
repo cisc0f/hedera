@@ -39,14 +39,6 @@ contract TokenSender is ExpiryHelper {
         createdTokenAddress = tokenAddress;
     }
 
-    function tokenTransfer(address tokenId, address receiver, int64 amount) external {
-        int response = HederaTokenService.transferToken(tokenId, address(this), receiver, amount);
-    
-        if (response != HederaResponseCodes.SUCCESS) {
-            revert ("Transfer Failed");
-        }
-    }
-
     // Transfer token from this contract to the recipient
     function transfer(address token, address recipient, uint256 amount) public {
         IERC20(token).transfer(recipient, amount);
