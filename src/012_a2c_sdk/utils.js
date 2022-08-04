@@ -26,7 +26,7 @@ async function tokenCreator(treasuryId, treasuryKey, client) {
         .setDecimals(2) // Decimals
         .setMaxTransactionFee(new Hbar(20)) // Change the default max transaction fee
         .freezeWith(client);
-    // Double sign with adminKey and treasuryKey
+    // Sign with treasuryKey
     const createTokenTx =  await createToken.sign(treasuryKey);
     const createTokenRx = await createTokenTx.execute(client);
     const createTokenReceipt = await createTokenRx.getReceipt(client);
