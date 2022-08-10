@@ -48,7 +48,7 @@ contract TokenSender is ExpiryHelper {
     }
 
     // Transfer token from this contract to the recipient
-    function transfer(address token, address recipient, uint256 amount) public {
+    function transferERC(address token, address recipient, uint256 amount) public {
         IERC20(token).transfer(recipient, amount);
     }
 

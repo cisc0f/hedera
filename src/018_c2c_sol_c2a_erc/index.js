@@ -35,7 +35,7 @@ const main = async () => {
     const createSenderRx = await createSenderSubmit.getReceipt(client);
     const contractIdSender = createSenderRx.contractId;
 
-    console.log("The new contract ID is " + contractIdSender);
+    console.log("The new TokenSender contract ID is " + contractIdSender);
 
     // Create TokenReceiver contract
     const createReceiverContract = new ContractCreateFlow()
@@ -45,7 +45,7 @@ const main = async () => {
     const createReceiverRx = await createReceiverSubmit.getReceipt(client);
     const contractIdReceiver = createReceiverRx.contractId;
 
-    console.log("The new contract ID is " + contractIdReceiver);
+    console.log("The new TokenReceiver contract ID is " + contractIdReceiver);
 
     // Create FT using TokenSender create function
     const createToken = new ContractExecuteTransaction()
@@ -136,7 +136,7 @@ const main = async () => {
     const tokenTransferERC = new ContractExecuteTransaction()
         .setContractId(contractIdSender) // Contract ID
         .setGas(4000000) // Increase if reverts
-        .setFunction("transfer", 
+        .setFunction("transferERC", 
             new ContractFunctionParameters()
             .addAddress(tokenIdSolidityAddr) // Token ID
             .addAddress(aliceId.toSolidityAddress()) // Token receiver ID
