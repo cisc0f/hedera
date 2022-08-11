@@ -85,7 +85,7 @@ const main = async () => {
     const tokenTransfer = new ContractExecuteTransaction()
         .setContractId(contractIdSender)
         .setGas(1500000)
-        .setFunction("tokenTransfer", 
+        .setFunction("transferPrecompile", 
             new ContractFunctionParameters()
             .addAddress(tokenId.toSolidityAddress())
             .addAddress(contractIdReceiver.toSolidityAddress())
