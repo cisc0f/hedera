@@ -120,18 +120,6 @@ const main = async () => {
     const aliceKey = PrivateKey.generateED25519();
     const aliceId = await accountCreator(aliceKey, 20, client);
 
-    // Associate token with Alice
-    const associateToken = await new TokenAssociateTransaction()
-        .setAccountId(AccountId.fromString(aliceId)) // receiver ID
-        .setTokenIds([tokenId]) // token IDs
-        .freezeWith(client)
-        .sign(aliceKey);
-    const associateTokenTx = await associateToken.execute(client);
-    const associateTokenRx = await associateTokenTx.getReceipt(client);
-    const associateTokenStatus = associateTokenRx.status;
-
-    console.log("The associate transaction status: " + associateTokenStatus.toString());
-
     // Execute token transfer from TokenSender to Alice
     const tokenTransferERC = new ContractExecuteTransaction()
         .setContractId(contractIdSender) // Contract ID
