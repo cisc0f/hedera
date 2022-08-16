@@ -5,12 +5,15 @@ const {
     TokenAssociateTransaction,
     ContractCreateFlow,
     TransferTransaction,
-    AccountInfoQuery
+    AccountInfoQuery,
+    ContractExecuteTransaction,
+    ContractFunctionParameters,
+    TokenId,
+    KeyList
 } = require('@hashgraph/sdk');
 
 const {
-    accountCreator, 
-    tokenCreator
+    accountCreator
 } = require('./utils');
 
 const fs = require('fs');
@@ -26,53 +29,54 @@ client.setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 20, client);
-    // const ownerKey = PrivateKey.generateED25519();
-    // const ownerId = await accountCreator(ownerKey, 10, client);
+    // Generating token receiver account
+    const aliceKey = PrivateKey.generateED25519();
+    const aliceId = await accountCreator(aliceKey, 20, client);
 
-    const bytecode = fs.readFileSync('TokenSender_sol_TokenSender.bin');
-    // Change operator to adminId
-    client.setOperator(adminId, adminKey);
+    const adminKey = PrivateKey.generateED25519();
+
+    const bytecode = fs.readFileSync('./binaries/TokenSender_sol_TokenSender.bin');
+
     // Create contract using ContractCreateFlow
     const createContract = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecode)
-        .setAdminKey(adminKey);
+        .setAdminKey(adminKey)
+        .sign(adminKey);
     const createSubmit = await createContract.execute(client);
     const createRx = await createSubmit.getReceipt(client);
     const contractId = createRx.contractId;
 
     console.log("The new contract ID is " + contractId);
 
-    // Create token and give to account
-    const tokenId = await tokenCreator(adminKey, AccountId.fromString(contractId), adminKey, client);
+    // Create FT using precompile function
+    const createToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(300000) // Increase if reverts
+        .setPayableAmount(20) // Increase if reverts
+        .setFunction("createFungible", 
+            new ContractFunctionParameters()
+            .addString("USD Bar") // FT name
+            .addString("USDB") // FT symbol
+            .addUint256(10000) // FT initial supply
+            .addUint256(2) // FT decimals
+            .addUint32(7000000)); // auto renew period
 
-    console.log("The new token ID is " + tokenId);
+    const createTokenTx = await createToken.execute(client);
+    const createTokenRx = await createTokenTx.getRecord(client);
+    const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
+    const tokenId = TokenId.fromSolidityAddress(tokenIdSolidityAddr);
 
-    // Switch back to operatorId
-    client.setOperator(operatorId, operatorKey);
-
-    // Associate token to account
-    const associateToken = new TokenAssociateTransaction()
-        .setAccountId(operatorId)
-        .setTokenIds([tokenId]);
-        // Signing not needed as execute is using operatorKey to sign already
-
-    const associateTokenTx = await associateToken.execute(client);
-    const associateTokenRx = await associateTokenTx.getReceipt(client);
-
-    const associateTokenStatus = associateTokenRx.status;
-
-    console.log("The associate transaction status: " + associateTokenStatus.toString());
+    console.log(`Token created with ID: ${tokenId} \n`);
 
     // Transfer token from contract to account using SDK
-    const transferToken = new TransferTransaction()
+    const transferToken = await new TransferTransaction()
         .addTokenTransfer(tokenId, contractId, -1000) // Transfer 10 USDB
-        .addTokenTransfer(tokenId, operatorId, 1000)
-        .freezeWith(client);
-    const transferTokenTx = await transferToken.sign(adminKey);
-    const transferTokenSubmit = await transferTokenTx.execute(client);
+        .addTokenTransfer(tokenId, aliceId, 1000)
+        .freezeWith(client)
+        .sign(adminKey);
+    
+    const transferTokenSubmit = await transferToken.execute(client);
     const transferTokenRx = await transferTokenSubmit.getReceipt(client);
 
     const transferTokenStatus = transferTokenRx.status;
@@ -81,7 +85,7 @@ const main = async () => {
 
     //Create the query
     const query = new AccountInfoQuery()
-        .setAccountId(operatorId)
+        .setAccountId(aliceId)
 
     const info = await query.execute(client);
     const balance = info.tokenRelationships.get(tokenId).balance / 100;

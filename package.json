@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/cisc0f/hedera#readme",
   "dependencies": {
-    "@hashgraph/sdk": "^2.17.1",
+    "@hashgraph/sdk": "^2.18.0",
     "dotenv": "^16.0.1"
   }
 }
