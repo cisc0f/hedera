@@ -23,7 +23,7 @@ contract TokenSender is ExpiryHelper{
         token.treasury = address(this);
 
         // create the expiry schedule for the token using ExpiryHelper
-        token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod);
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod);
 
         // call HTS precompiled contract, passing initial supply and decimals
         (int responseCode, address tokenAddress) =
@@ -34,14 +34,6 @@ contract TokenSender is ExpiryHelper{
         }
 
         createdTokenAddress = tokenAddress;
-    }
-    
-    function tokenAssociate(address tokenId, address accountId) external {
-        int response = HederaTokenService.associateToken(accountId, tokenId);
-
-        if (response != HederaResponseCodes.SUCCESS) {
-            revert ("Associate Failed");
-        }
     }
 
     function tokenTransfer(address tokenId, address receiver, int64 amount) external {

@@ -59,23 +59,6 @@ const main = async () => {
 
     console.log(`Token created with ID: ${tokenId} \n`);
 
-    // Execute token associate
-    const tokenAssociate = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(1500000)
-        .setFunction("tokenAssociate", 
-            new ContractFunctionParameters()
-            .addAddress(tokenIdSolidityAddr) // Token ID
-            .addAddress(aliceId.toSolidityAddress()) // Account ID
-        )
-        .freezeWith(client);
-    const tokenAssociateSigned = await tokenAssociate.sign(aliceKey);
-    const tokenAssociateTx = await tokenAssociateSigned.execute(client);
-    const tokenAssociateRx = await tokenAssociateTx.getReceipt(client);
-    const tokenAssociateStatus = tokenAssociateRx.status;
-
-    console.log("Token associate transaction status: " + tokenAssociateStatus.toString());
-
     // Execute token transfer
     const tokenTransfer = new ContractExecuteTransaction()
         .setContractId(contractId)
