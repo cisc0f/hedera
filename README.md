@@ -71,3 +71,7 @@ An example on how to setup a smart contract as token treasury using precompile<b
 #### `018_c2c_sol_c2a_erc`
 An example derived from 014 and 007 merged into one project.<br>
 [Explore Now](./src/018_c2c_sol_c2a_erc/)
+#
+#### `019_topic_update`
+An example on how to update a topic.<br>
+[Explore Now](./src/019_topic_update/)
