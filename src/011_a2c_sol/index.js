@@ -24,11 +24,10 @@ client.setOperator(operatorId, operatorKey);
 
 const main = async () => {
 
-    const adminKey = PrivateKey.generateED25519();
-    const adminId = await accountCreator(adminKey, 10, client);
-    // add owner?
+    const aliceKey = PrivateKey.generateED25519();
+    const aliceId = await accountCreator(aliceKey, 10, client);
 
-    const tokenId = await tokenCreator(adminKey, operatorId, operatorKey, client);
+    const tokenId = await tokenCreator(aliceId, aliceKey, client);
 
     console.log("The new token ID is " + tokenId);
 
@@ -65,11 +64,11 @@ const main = async () => {
         .setFunction("tokenTransfer", 
             new ContractFunctionParameters()
             .addAddress(tokenId.toSolidityAddress())
-            .addAddress(operatorId.toSolidityAddress())
+            .addAddress(aliceId.toSolidityAddress())
             .addInt64(1000)
         )
         .freezeWith(client);
-    const tokenTransferSigned = await tokenTransfer.sign(operatorKey);
+    const tokenTransferSigned = await tokenTransfer.sign(aliceKey);
     const tokenTransferTx = await tokenTransferSigned.execute(client);
     const tokenTransferRx = await tokenTransferTx.getReceipt(client);
     const tokenTransferStatus = tokenTransferRx.status;

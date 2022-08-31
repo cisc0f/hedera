@@ -32,13 +32,13 @@ const main = async () => {
 
     const bytecodeSender = fs.readFileSync('./binaries/TokenSender_sol_TokenSender.bin');
     const bytecodeReceiver = fs.readFileSync('./binaries/TokenReceiver_sol_TokenReceiver.bin');
-    // Change operator to adminId
-    client.setOperator(adminId, adminKey);
+    
     // Create sender contract using ContractCreateFlow
     const createSenderContract = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecodeSender)
-        .setAdminKey(adminKey);
+        .setAdminKey(adminKey)
+        .sign(adminKey);
     const createSenderSubmit = await createSenderContract.execute(client);
     const createSenderRx = await createSenderSubmit.getReceipt(client);
     const contractIdSender = createSenderRx.contractId;
@@ -49,7 +49,8 @@ const main = async () => {
     const createReceiverContract = new ContractCreateFlow()
         .setGas(100000)
         .setBytecode(bytecodeReceiver)
-        .setAdminKey(adminKey);
+        .setAdminKey(adminKey)
+        .sign(adminKey);
     const createReceiverSubmit = await createReceiverContract.execute(client);
     const createReceiverRx = await createReceiverSubmit.getReceipt(client);
     const contractIdReceiver = createReceiverRx.contractId;
@@ -62,10 +63,11 @@ const main = async () => {
     console.log("The new token ID is " + tokenId);
 
     // Associate token to account
-    const associateToken = new TokenAssociateTransaction()
+    const associateToken = await new TokenAssociateTransaction()
         .setAccountId(AccountId.fromString(contractIdReceiver))
-        .setTokenIds([tokenId]);
-        // Signing not needed as execute is using operatorKey to sign already
+        .setTokenIds([tokenId])
+        .freezeWith(client)
+        .sign(adminKey);
 
     const associateTokenTx = await associateToken.execute(client);
     const associateTokenRx = await associateTokenTx.getReceipt(client);
@@ -73,9 +75,6 @@ const main = async () => {
     const associateTokenStatus = associateTokenRx.status;
 
     console.log("The associate transaction status: " + associateTokenStatus.toString());
-
-    // Switch back to operatorId
-    client.setOperator(operatorId, operatorKey);
 
     // Transfer token from contract to account using SDK
     const transferToken = new TransferTransaction()
