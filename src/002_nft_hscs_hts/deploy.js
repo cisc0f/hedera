@@ -45,7 +45,7 @@ const main = async () => {
 
     // Create contract
     const createContract = new ContractCreateFlow()
-        .setGas(150000) // Increase if revert
+        .setGas(300000) // Increase if revert
         .setBytecode(bytecode); // Contract bytecode
     const createContractTx = await createContract.execute(client);
     const createContractRx = await createContractTx.getReceipt(client);

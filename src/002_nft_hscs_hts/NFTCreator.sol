@@ -19,7 +19,7 @@ contract NFTCreator is ExpiryHelper {
 
         IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
         // Set this contract as supply
-        keys[0] = getSingleKey(HederaTokenService.SUPPLY_KEY_TYPE, KeyHelper.CONTRACT_ID_KEY, address(this));
+        keys[0] = getSingleKey(KeyType.SUPPLY, KeyValueType.CONTRACT_ID, address(this));
 
         IHederaTokenService.HederaToken memory token;
         token.name = name;
@@ -30,12 +30,12 @@ contract NFTCreator is ExpiryHelper {
         token.maxSupply = maxSupply;
         token.tokenKeys = keys;
         token.freezeDefault = false;
-        token.expiry = getAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
 
         (int responseCode, address createdToken) = HederaTokenService.createNonFungibleToken(token);
 
         if(responseCode != HederaResponseCodes.SUCCESS){
-            revert("Failed to create non-fungible token");
+            //revert("Failed to create non-fungible token");
         }
         return createdToken;
     }
