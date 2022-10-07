@@ -13,7 +13,7 @@ contract NFTCreator is ExpiryHelper {
             string memory name, 
             string memory symbol, 
             string memory memo, 
-            uint32 maxSupply,  
+            int64 maxSupply,  
             uint32 autoRenewPeriod
         ) external payable returns (address){
 

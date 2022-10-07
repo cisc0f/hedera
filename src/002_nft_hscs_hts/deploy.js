@@ -63,7 +63,7 @@ const main = async () => {
             .addString("CryptoFrancis") // NFT name
             .addString("CRYF") // NFT symbol
             .addString("Just a memo") // NFT memo
-            .addUint32(10) // NFT max supply
+            .addInt64(10) // NFT max supply
             .addUint32(7000000) // Expiration: Needs to be between 6999999 and 8000001
             );
     const createTokenTx = await createToken.execute(client);
