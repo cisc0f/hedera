@@ -75,3 +75,7 @@ An example derived from 014 and 007 merged into one project.<br>
 #### `019_topic_update`
 An example on how to update a topic.<br>
 [Explore Now](./src/019_topic_update/)
+#
+#### `020_hip_573`
+An example on HIP-573<br>
+[Explore Now](./src/020_hip_573/)
