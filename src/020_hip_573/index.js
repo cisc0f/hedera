@@ -13,10 +13,10 @@ const {
 
 require('dotenv').config({path: __dirname + '/../../.env'});
 
-const operatorId = AccountId.fromString(process.env.PNET_ID);
-const operatorKey = PrivateKey.fromString(process.env.PNET_KEY);
+const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
+const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 
-const client = Client.forPreviewnet().setOperator(operatorId, operatorKey);
+const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 const accountCreator =  async (initialBalance, privateKey) => {
     const createAccount = new AccountCreateTransaction()
@@ -89,16 +89,16 @@ async function main() {
     console.log(`STEP 2 - Token with custom fees created: ${tokenId}\n`);
 
     // STEP 3: Send token from treasury to one account and from one account to another
-    const transferFromTrasuryTx = await new TransferTransaction()
+    const transferFromTreasuryTx = await new TransferTransaction()
         .addTokenTransfer(tokenId, operatorId, -10000)
         .addTokenTransfer(tokenId, accountId2, 10000)
         .freezeWith(client)
         .execute(client);
 
-    const transferFromTrasuryRx = await transferFromTrasuryTx.getReceipt(client);
-    const transferFromTrasuryStatus = transferFromTrasuryRx.status.toString();
+    const transferFromTreasuryRx = await transferFromTreasuryTx.getReceipt(client);
+    const transferFromTreasuryStatus = transferFromTreasuryRx.status.toString();
 
-    console.log(`STEP 3 \nToken transfer from treasury to account 2: ${transferFromTrasuryStatus}`);
+    console.log(`STEP 3 \nToken transfer from treasury to account 2: ${transferFromTreasuryStatus}`);
 
     const transferFromAccount2 = await new TransferTransaction()
         .addTokenTransfer(tokenId, accountId2, -10000)
